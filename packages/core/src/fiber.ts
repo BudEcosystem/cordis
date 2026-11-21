@@ -412,12 +412,24 @@ export class Fiber {
     })
   }
 
+  /** Whether this fiber was disposed, or it or an ancestor is unloading. */
+  private _departing(): boolean {
+    for (let fiber: Fiber | undefined = this; fiber; fiber = fiber.parent.fiber === fiber ? undefined : fiber.parent.fiber) {
+      if (fiber.uid === null || fiber.state === FiberState.UNLOADING) return true
+    }
+    return false
+  }
+
   private async _reload() {
     this.store = { ...this._store }
     const oldEpoch = this._runner.epoch
     try {
       await Promise.resolve()
-      await this._execute(this._runner)
+      // A fiber disposed meanwhile (an app exiting during startup) has no uid,
+      // and while it or an ancestor unloads, its context is going: its plugin
+      // (or a plugin it starts) would fail on its first effect. Nothing awaits
+      // between this check and the plugin.
+      if (!this._departing()) await this._execute(this._runner)
     } catch (reason) {
       // impl guarantees that the error is non-null (?)
       this.ctx.logger.error(reason)

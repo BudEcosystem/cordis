@@ -150,15 +150,16 @@ describe('Plugin', () => {
     expect(fiber.uid).to.equal(1)
     expect(dispose.mock.calls).to.have.length(0)
     expect(root.fiber._disposables.length).to.equal(1)
+    // Disposed before its first checkpoint, the plugin never runs, so it has nothing to dispose.
     await root.fiber.dispose()
     expect(root.fiber.uid).to.equal(0)
     expect(fiber.uid).to.equal(null)
-    expect(dispose.mock.calls).to.have.length(1)
+    expect(dispose.mock.calls).to.have.length(0)
     expect(root.fiber._disposables.length).to.equal(0)
     await root.fiber.dispose()
     expect(root.fiber.uid).to.equal(0)
     expect(fiber.uid).to.equal(null)
-    expect(dispose.mock.calls).to.have.length(1)
+    expect(dispose.mock.calls).to.have.length(0)
     expect(root.fiber._disposables.length).to.equal(0)
   })
   

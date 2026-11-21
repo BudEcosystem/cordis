@@ -165,6 +165,9 @@ export class Entry {
     } finally {
       this._initTask = undefined
     }
+    // The tree this entry belongs to was disposed while the import ran, as an app that exits during startup (`--help`)
+    // disposes it: there is nothing left to apply the plugin to, and applying it would only fail on the inactive context.
+    if (this.parent.ctx.fiber.uid === null) return
     const plugin = this.loader.unwrapExports(exports)
     this._patchContext([])
     this.loader.showLog(this, 'apply')
